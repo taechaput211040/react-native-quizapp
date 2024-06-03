@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { router } from 'expo-router';
+import { LeaderScoreboard } from '@/components/LeaderScore';
 type RootStackParamList = {
-  LeaderboardScreen: { score: number }; 
+  LeaderboardScreen: { score: number };
 };
 type LeaderboardScreenProps = {
   route: RouteProp<RootStackParamList, 'LeaderboardScreen'>;
@@ -12,15 +13,21 @@ const backtoTest = () => {
   router.push('/')
 }
 const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ route }) => {
-  const { score } = route.params; 
-  return (
+  const { score } = route.params;
+  return (<>
     <View style={styles.container}>
       <h1>Leader Board</h1>
       <Text style={styles.scoreText}>Your Score: {score}</Text>
+
+      <LeaderScoreboard></LeaderScoreboard>
       <Pressable style={styles.button} onPress={() => backtoTest()}>
         <Text style={styles.textbtn}>back to test</Text>
       </Pressable>
     </View>
+
+
+  </>
+
   );
 };
 

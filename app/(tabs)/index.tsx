@@ -3,11 +3,12 @@ import { View, Text, Button, StyleSheet, Pressable } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { getRandomizedQuestions } from '../utils/question';
-import { Question, ans } from '../model/question'; 
+import { Question, ans } from '../model/question';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
-  index: undefined; 
-  LeaderboardScreen: { score: number };
+  index: undefined;
+  LeaderboardScreen: { user: string, score: number };
 };
 
 type QuizScreenProps = {
@@ -16,17 +17,27 @@ type QuizScreenProps = {
 };
 
 const QuizScreen: React.FC<QuizScreenProps> = ({ navigation }) => {
-  const [questions, setQuestions] = useState<Question[]>([]); 
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [boardScore, setboardScore] = useState('');
+  const [user, setUser] = useState('');
 
   useEffect(() => {
-    const randomQuestions = getRandomizedQuestions(); 
+    const randomQuestions = getRandomizedQuestions();
     setQuestions(randomQuestions);
-    
+    const fetchStorage = async () => {
+      let board = await AsyncStorage.getItem('boardscore')
+      if (board) {
+        setboardScore(board)
+      } else {
+        setboardScore('')
+      }
+    }
+    fetchStorage()
   }, []);
-  console.log(questions,'questions')
+  console.log(questions, 'questions')
   const handleAnswer = (selectedAnswer: ans) => {
     if (selectedAnswer?.correct) {
       setScore(score + 1);
@@ -35,7 +46,28 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ navigation }) => {
     if (nextQuestionIndex < questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex);
     } else {
-      navigation.navigate('LeaderboardScreen', { score });
+      let result = '';
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const charactersLength = characters.length;
+      for (let i = 0; i < 5; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      setUser(result)
+      let setboard = null
+      if (boardScore != '') {
+        setboard = JSON.parse(boardScore)
+      } else {
+        setboard = []
+      }
+      setboard.push({
+        user: result,
+        score: score
+      })
+      AsyncStorage.setItem(
+        'boardscore',
+        JSON.stringify(setboard),
+      );
+      navigation.navigate('LeaderboardScreen', { user: result, score: score });
     }
   };
 
